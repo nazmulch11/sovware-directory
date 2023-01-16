@@ -78,7 +78,6 @@ class Sovware_Directory {
 		$this->set_locale();
 		$this->define_admin_hooks();
 		$this->define_public_hooks();
-
 	}
 
 	/**
@@ -173,7 +172,25 @@ class Sovware_Directory {
 		$this->loader->add_action( 'wp_enqueue_scripts', $plugin_public, 'enqueue_styles' );
 		$this->loader->add_action( 'wp_enqueue_scripts', $plugin_public, 'enqueue_scripts' );
 
+        add_action( 'init', [$this, 'create_sovware_listing_post_type'] );
+        add_action( 'rest_api_init', [ $this, 'sovware_directory_rest' ] );
+        add_shortcode('sovaredirectory',[$this,'showlistingform']);
+
 	}
+
+    public function create_sovware_listing_post_type() {
+        register_post_type( 'sovware_listing',
+            array(
+                'labels' => array(
+                    'name' => __( 'Sovware Listings' ),
+                    'singular_name' => __( 'Sovware Listing' )
+                ),
+                'public' => true,
+                'has_archive' => true,
+                'supports' => array( 'title', 'editor', 'thumbnail' )
+            )
+        );
+    }
 
 	/**
 	 * Run the loader to execute all of the hooks with WordPress.
@@ -215,4 +232,83 @@ class Sovware_Directory {
 		return $this->version;
 	}
 
+
+
+    /**
+     * From function that is showing to frontend
+     *
+     * @since     1.0.0
+     * @return    string    form html
+     */
+    public function showlistingform() {
+
+        if (!is_user_logged_in() ) {
+            return '<a href="'. esc_url( wp_login_url( get_permalink() ) ).'" alt="'.esc_attr( 'Login', 'sovware-directory' ).'">
+	'. __( 'Login', 'sovware-directory' ).'</a>';
+        }
+
+        ob_start();
+        include plugin_dir_path( dirname( __FILE__ ) )  . 'public/views/forms.php';
+        return ob_get_clean();
+    }
+
+    /**
+     * Custom url posting
+     *
+     * @since     1.0.0
+     * @return    string    form html
+     */
+
+    public function sovware_directory_rest(){
+        register_rest_route( 'sovware-directory/v1', 'submitlisting', array(
+            'methods' => 'post',
+            'callback' => [$this, 'sov_directory_submit_post'],
+            'permission_callback' => '__return_true'
+        ) );
+    }
+
+    public function sov_directory_submit_post($request)
+    {
+        $data = $request->get_json_params();
+        $title = $data['title'];
+        $content =  $data['content'];
+
+        $post_id = wp_insert_post( array(
+            'post_title' => $title,
+            'post_content' => $content,
+            'post_status' => 'publish',
+            'post_type' => 'sovware_listing',
+        ) );
+
+        if ( is_wp_error( $post_id ) ) {
+            return $post_id;
+        }
+        
+        return get_post( $post_id );
+    }
+
+
+    public function sovware_directory_permission(){
+
+        // e.g. check if current user has the necessary capability
+        if( current_user_can( 'edit_posts' ) ) {
+            return true;
+        }
+        return new WP_Error( 'rest_forbidden', __( 'You do not have permission' ), array( 'status' => 403 ) );
+    }
+
+    /**
+     * Custom url posting
+     *
+     * @since     1.0.0
+     * @return    string    form html
+     */
+    public function my_custom_endpoint_callback($request)
+    {
+print_r($request);
+
+
+    }
 }
+
+

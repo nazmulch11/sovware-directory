@@ -97,6 +97,11 @@ class Sovware_Directory_Public {
 		 */
 
 		wp_enqueue_script( $this->plugin_name, plugin_dir_url( __FILE__ ) . 'js/sovware-directory-public.js', array( 'jquery' ), $this->version, false );
+        wp_localize_script( $this->plugin_name, 'RestObj', array(
+            'restURL' => rest_url(),
+            'restNonce' => wp_create_nonce('wp_rest_action')
+
+        ) );
 
 	}
 
