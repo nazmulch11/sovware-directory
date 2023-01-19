@@ -262,16 +262,24 @@ class Sovware_Directory {
     public function sovware_directory_rest(){
         register_rest_route( 'sovware-directory/v1', 'submitlisting', array(
             'methods' => 'post',
-            'callback' => [$this, 'sov_directory_submit_post'],
+            'callback' => [$this, 'sovare_directory_submit_post'],
             'permission_callback' => '__return_true'
         ) );
     }
 
-    public function sov_directory_submit_post($request)
+    /**
+     * submit posting
+     *
+     * @since     1.0.0
+     * @return    integer  - id of post
+     */
+    public function sovare_directory_submit_post($request)
     {
-        $data = $request->get_json_params();
-        $title = $data['title'];
-        $content =  $data['content'];
+        wp_verify_nonce('wp_nonce_action');
+
+        print_r($_POST);exit;
+        $title = sanitize_text_field($_POST['title']);
+        $content =  sanitize_text_field($_POST['content']);
 
         $post_id = wp_insert_post( array(
             'post_title' => $title,
@@ -283,11 +291,17 @@ class Sovware_Directory {
         if ( is_wp_error( $post_id ) ) {
             return $post_id;
         }
-        
+
+        return rest_ensure_response();
         return get_post( $post_id );
     }
 
-
+    /**
+     * For Directory permission
+     *
+     * @since     1.0.0
+     * @return    string    form html
+     */
     public function sovware_directory_permission(){
 
         // e.g. check if current user has the necessary capability
@@ -297,18 +311,6 @@ class Sovware_Directory {
         return new WP_Error( 'rest_forbidden', __( 'You do not have permission' ), array( 'status' => 403 ) );
     }
 
-    /**
-     * Custom url posting
-     *
-     * @since     1.0.0
-     * @return    string    form html
-     */
-    public function my_custom_endpoint_callback($request)
-    {
-print_r($request);
-
-
-    }
 }
 
 
