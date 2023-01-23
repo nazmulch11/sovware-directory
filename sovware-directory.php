@@ -4,7 +4,7 @@
  * @wordpress-plugin
  * Plugin Name:       Sovware Directory
  * Plugin URI:        https://sovware.com
- * Description:       Directory plugin where a logged in user will submit listings through a frontend submission form. And submitted listings will be shown to the visitor using 4x3 grid on the frontend.
+ * Description:       Directory plugin where a logged in user will submit listings through a frontend submission form. use [sovaredirectory] - showing form and use [show_listing_record] - show list records
  * Version:           1.0.0
  * Author:            Nazmul Hosen
  * Author URI:        https://nazmul.xyz
